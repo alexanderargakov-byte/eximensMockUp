@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eximens — Web App</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%232563eb'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-family='Inter,sans-serif' font-weight='700' font-size='18' fill='white'>E</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0B1326; color: #DAE2FD; overflow: hidden; }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+  input, textarea { color-scheme: dark; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2D3449; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+Object.assign(window, {
+  NavBar: function NavBar({ activeTab, onTabChange }) {
+    const tabs = ['Assistant', 'Dashboard', 'Consilium', 'Flow'];
+    return React.createElement('nav', { style: navStyles.nav },
+      React.createElement('a', { href: 'https://eximens.ai', target: '_blank', rel: 'noopener noreferrer', style: { ...navStyles.wordmark, textDecoration: 'none' } }, 'Eximens'),
+      React.createElement('div', { style: navStyles.tabs },
+        tabs.map(tab =>
+          React.createElement('button', {
+            key: tab,
+            style: { ...navStyles.tab, ...(activeTab === tab ? navStyles.tabActive : {}) },
+            onClick: () => onTabChange(tab),
+            onMouseEnter: e => { if (activeTab !== tab) e.target.style.color = '#C3C6D7'; },
+            onMouseLeave: e => { if (activeTab !== tab) e.target.style.color = '#8D90A0'; },
+          }, tab)
+        )
+      ),
+      React.createElement('div', { style: navStyles.right },
+        React.createElement('span', { style: navStyles.iconBtn, title: 'Language' },
+          React.createElement('svg', { width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, viewBox: '0 0 24 24' },
+            React.createElement('path', { d: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z' }),
+            React.createElement('path', { d: 'M3.6 9h16.8M3.6 15h16.8' }),
+            React.createElement('path', { d: 'M12 3a15.3 15.3 0 0 1 4 9 15.3 15.3 0 0 1-4 9 15.3 15.3 0 0 1-4-9 15.3 15.3 0 0 1 4-9z' })
+          )
+        ),
+        React.createElement('span', { style: navStyles.iconBtn, title: 'Search' },
+          React.createElement('svg', { width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, viewBox: '0 0 24 24' },
+            React.createElement('circle', { cx: 11, cy: 11, r: 8 }),
+            React.createElement('path', { d: 'm21 21-4.35-4.35' })
+          )
+        ),
+        React.createElement('span', { style: { ...navStyles.iconBtn, position: 'relative' }, title: 'Notifications' },
+          React.createElement('svg', { width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, viewBox: '0 0 24 24' },
+            React.createElement('path', { d: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' })
+          ),
+          React.createElement('span', { style: navStyles.notifDot })
+        ),
+        React.createElement('div', { style: navStyles.avatar }, 'AA')
+      )
+    );
+  }
+});
+
+const navStyles = {
+  nav: { background: '#020617', borderBottom: '1px solid #171F33', padding: '0 24px', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 },
+  wordmark: { fontSize: 18, fontWeight: 700, color: '#DAE2FD', letterSpacing: '-0.01em', fontFamily: 'Inter, sans-serif' },
+  tabs: { display: 'flex', gap: 0 },
+  tab: { padding: '0 16px', height: 52, display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 500, color: '#8D90A0', cursor: 'pointer', background: 'none', border: 'none', borderBottom: '2px solid transparent', fontFamily: 'Inter, sans-serif', transition: 'color 200ms, border-color 200ms' },
+  tabActive: { color: '#DAE2FD', borderBottomColor: '#2563EB' },
+  right: { display: 'flex', alignItems: 'center', gap: 16 },
+  iconBtn: { color: '#8D90A0', cursor: 'pointer', display: 'flex', alignItems: 'center' },
+  notifDot: { position: 'absolute', top: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: '#2563EB', border: '1.5px solid #0B1326' },
+  avatar: { width: 32, height: 32, borderRadius: '50%', background: '#2D3449', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#C3C6D7', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
+};
+
+</script>
+
+<script type="text/babel">
+Object.assign(window, { AssistantView });
+
+function AssistantView() {
+  const [inputValue, setInputValue] = React.useState('');
+  const [focused, setFocused] = React.useState(false);
+  const [messages, setMessages] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  const chips = [
+    'Who owns this methodology now',
+    'Knowledge gap before next handoff',
+    'Last QR failure, root cause',
+    'Expertise at risk of leaving'
+  ];
+
+  function handleChipClick(text) {
+    setInputValue(text);
+  }
+
+  function handleSend() {
+    if (!inputValue.trim()) return;
+    const q = inputValue.trim();
+    setMessages(m => [...m, { role: 'user', text: q }]);
+    setInputValue('');
+    setLoading(true);
+    setTimeout(() => {
+      setMessages(m => [...m, { role: 'assistant', text: 'Based on the organizational knowledge connected to this context, I found relevant insights across 14 documents and 3 past projects. The Arctic project post-mortem (March 2024) identified three key lessons around thermal cycling tolerance…' }]);
+      setLoading(false);
+    }, 1200);
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  }
+
+  const hasConversation = messages.length > 0;
+
+  // Auto-expand textarea
+  function handleInput(e) {
+    setInputValue(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+  }
+
+  return React.createElement('div', { style: aStyles.container },
+    !hasConversation && React.createElement('div', { style: aStyles.emptyState },
+      React.createElement('h1', { style: aStyles.headline }, "What's on your mind?"),
+      React.createElement('p', { style: aStyles.subheadline }, 'Contribute your context')
+    ),
+
+    hasConversation && React.createElement('div', { style: aStyles.messages },
+      messages.map((m, i) =>
+        React.createElement('div', { key: i, style: m.role === 'user' ? aStyles.msgUser : aStyles.msgAssistant },
+          m.role === 'assistant' && React.createElement('div', { style: aStyles.assistantLabel }, 'Eximens'),
+          React.createElement('p', { style: m.role === 'user' ? aStyles.msgTextUser : aStyles.msgTextAssistant }, m.text)
+        )
+      ),
+      loading && React.createElement('div', { style: aStyles.msgAssistant },
+        React.createElement('div', { style: aStyles.assistantLabel }, 'Eximens'),
+        React.createElement('div', { style: aStyles.thinking },
+          React.createElement('span', { style: { ...aStyles.dot, animationDelay: '0ms' } }),
+          React.createElement('span', { style: { ...aStyles.dot, animationDelay: '160ms' } }),
+          React.createElement('span', { style: { ...aStyles.dot, animationDelay: '320ms' } })
+        )
+      )
+    ),
+
+    React.createElement('div', { style: aStyles.inputArea },
+      React.createElement('div', { style: { ...aStyles.inputBar, ...(focused ? aStyles.inputBarFocused : {}) } },
+        React.createElement('span', { style: aStyles.attachIcon, title: 'Attach file' },
+          React.createElement('svg', { width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, viewBox: '0 0 24 24' },
+            React.createElement('path', { d: 'M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48' })
+          )
+        ),
+        React.createElement('textarea', {
+          style: { ...aStyles.input, resize: 'none', overflowY: 'auto', lineHeight: '1.5', paddingTop: 2 },
+          placeholder: 'Ask anything, share a document, or think out loud…',
+          value: inputValue,
+          rows: 1,
+          onChange: handleInput,
+          onFocus: () => setFocused(true),
+          onBlur: () => setFocused(false),
+          onKeyDown: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } },
+        }),
+        React.createElement('button', {
+          style: aStyles.micBtn,
+          title: 'Voice input',
+          onClick: () => {},
+        },
+          React.createElement('svg', { width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, viewBox: '0 0 24 24' },
+            React.createElement('rect', { x: 9, y: 2, width: 6, height: 11, rx: 3 }),
+            React.createElement('path', { d: 'M5 10a7 7 0 0014 0' }),
+            React.createElement('line', { x1: 12, y1: 17, x2: 12, y2: 21 }),
+            React.createElement('line', { x1: 9, y1: 21, x2: 15, y2: 21 })
+          )
+        ),
+        React.createElement('button', {
+          style: { ...aStyles.sendBtn, ...(inputValue.trim() ? aStyles.sendBtnActive : {}) },
+          onClick: handleSend,
+        },
+          React.createElement('svg', { width: 16, height: 16, fill: 'none', stroke: 'white', strokeWidth: 2, viewBox: '0 0 24 24' },
+            React.createElement('line', { x1: 12, y1: 19, x2: 12, y2: 5 }),
+            React.createElement('polyline', { points: '5 12 12 5 19 12' })
+          )
+        )
+      ),
+
+      !hasConversation && React.createElement('div', { style: aStyles.chips },
+        chips.map((c, i) =>
+          React.createElement('button', {
+            key: i,
+            style: aStyles.chip,
+            onClick: () => handleChipClick(c),
+            onMouseEnter: e => { e.currentTarget.style.borderColor = '#B4C5FF'; e.currentTarget.style.color = '#C3C6D7'; },
+            onMouseLeave: e => { e.currentTarget.style.borderColor = '#2D3449'; e.currentTarget.style.color = '#8D90A0'; }
+          }, c)
+        )
+      ),
+
+      !hasConversation && React.createElement('p', { style: aStyles.footer },
+        'Your context is always connected. Nothing gets lost.'
+      )
+    )
+  );
+}
+
+const aStyles = {
+  container: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', position: 'relative', overflow: 'hidden' },
+  emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32, gap: 10 },
+  headline: { fontSize: 34, fontWeight: 700, color: '#DAE2FD', letterSpacing: '-0.025em', textAlign: 'center', background: 'linear-gradient(135deg, #DAE2FD 0%, #87B9F0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' },
+  subheadline: { fontSize: 20, fontWeight: 400, color: '#C3C6D7', textAlign: 'center', fontFamily: 'Inter, sans-serif', letterSpacing: '-0.01em' },
+  messages: { width: '100%', maxWidth: 720, flex: 1, display: 'flex', flexDirection: 'column', gap: 24, overflowY: 'auto', paddingBottom: 24, marginBottom: 16 },
+  msgUser: { display: 'flex', justifyContent: 'flex-end' },
+  msgAssistant: { display: 'flex', flexDirection: 'column', gap: 8 },
+  msgTextUser: { background: '#222A3D', color: '#DAE2FD', padding: '12px 18px', borderRadius: 12, fontSize: 15, lineHeight: 1.6, maxWidth: '70%', fontFamily: 'Inter, sans-serif' },
+  msgTextAssistant: { color: '#C3C6D7', fontSize: 15, lineHeight: 1.7, maxWidth: '100%', fontFamily: 'Inter, sans-serif' },
+  assistantLabel: { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B4C5FF', fontFamily: 'Inter, sans-serif' },
+  thinking: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 0' },
+  dot: { width: 6, height: 6, borderRadius: '50%', background: '#8D90A0', animation: 'pulse 1.2s ease-in-out infinite' },
+  inputArea: { width: '100%', maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 16 },
+  inputBar: { display: 'flex', alignItems: 'flex-end', gap: 12, background: '#171F33', border: '1px solid #2D3449', borderRadius: 12, padding: '12px 12px 12px 16px', transition: 'border-color 200ms, box-shadow 200ms' },
+  inputBarFocused: { borderColor: '#2563EB', boxShadow: '0 0 0 3px rgba(37,99,235,0.15)' },
+  attachIcon: { color: '#8D90A0', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' },
+  input: { flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 15, color: '#DAE2FD', fontFamily: 'Inter, sans-serif', caretColor: '#B4C5FF' },
+  micBtn: { width: 32, height: 32, borderRadius: '50%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#8D90A0', transition: 'color 200ms' },
+  sendBtn: { width: 32, height: 32, borderRadius: '50%', background: '#2D3449', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 200ms' },
+  sendBtnActive: { background: '#2563EB' },
+  chips: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' },
+  chip: { padding: '8px 16px', background: '#171F33', border: '1px solid #2D3449', borderRadius: 20, fontSize: 13, color: '#8D90A0', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'border-color 200ms, color 200ms', whiteSpace: 'nowrap' },
+  footer: { textAlign: 'center', fontSize: 12, color: 'rgba(141,144,160,0.6)', fontFamily: 'Inter, sans-serif', marginTop: 16 }
+};
+
+</script>
+
+<script type="text/babel">
+Object.assign(window, { DashboardView });
+
+function DashboardView() {
+  const topCards = [
+    {
+      stat: '147',
+      label: 'Open Questions',
+      lines: [
+        '23 critical · 58 in progress · 66 awaiting expert input',
+        'Oldest unresolved: Brush seal wire diameter optimization for T* above 1900K',
+      ],
+      age: '14 days',
+    },
+    {
+      stat: '89%',
+      label: 'Knowledge Coverage',
+      lines: null,
+      coverage: [
+        { name: 'Turbine cooling schemes', pct: 94 },
+        { name: 'Compressor aerodynamics', pct: 91 },
+        { name: 'Sealing systems', pct: 76 },
+        { name: 'Single-crystal alloys DB', pct: 71 },
+      ],
+    },
+    {
+      stat: '12',
+      label: 'Expertise at Risk',
+      lines: [
+        '12 specialists with critical undocumented knowledge.',
+        '3 in Turbine Design with retirement within 18 months.',
+      ],
+      risk: 'Highest risk: film cooling hole geometry optimization (single expert).',
+    },
+  ];
+
+  const summaryItems = [
+    { stat: '1,847', label: 'knowledge entries captured this month' },
+    { stat: '340',   label: 'cross-department connections discovered' },
+    { stat: '4.2 hrs', label: 'average time saved per engineer per week' },
+    { stat: '23',    label: 'problems resolved through existing knowledge' },
+  ];
+
+  const trending = [
+    { dept: 'Turbine Design', time: '2h ago',  text: 'What is the optimal cooling effectiveness θ for convective-film cooling at gas temperatures above 1800K?' },
+    { dept: 'Sealing Systems', time: '5h ago', text: 'Has anyone tested brush seal configurations with bristle density above 300 per cm at pressure differentials exceeding 1200 kPa?' },
+    { dept: 'Materials',       time: '1d ago', text: 'Which nickel superalloy compositions maintain creep resistance above 1350K for 10,000 hour service life?' },
+    { dept: 'Structural',      time: '1d ago', text: 'What are the validated thermal stress models for disk rim temperatures above 1100K with radial gradient ΔT of 400K?' },
+    { dept: 'Combustion',      time: '2d ago', text: 'What transpiration cooling configurations achieve θ above 0.6 without exceeding 3% coolant flow rate?' },
+  ];
+
+  const discoveries = [
+    { dot: '#4ADE80', text: 'Connection found: deflector cooling failure patterns from Project Vortex (2023) match current HPT blade redesign assumptions. 3 engineers notified.' },
+    { dot: '#4ADE80', text: 'Duplicate effort detected: Compressor team and Turbine team independently modeling brush seal leakage with different boundary conditions. Consilium session recommended.' },
+    { dot: '#FBBF24', text: 'Knowledge gap identified: No documentation exists for loop cooling scheme hydraulic resistance calculations used in Stage 2 HPT. Single expert: Dr. Volkov.' },
+    { dot: '#4ADE80', text: 'Cross-department insight: Materials team thermal barrier coating data resolves open question from Turbine Design about film cooling degradation at 15,000 hours.' },
+  ];
+
+  return React.createElement('div', { style: ds.page },
+    React.createElement('div', { style: ds.inner },
+
+      // ── Top cards ──
+      React.createElement('div', { style: ds.grid3 },
+        topCards.map((c, i) =>
+          React.createElement('div', { key: i, style: ds.topCard },
+            React.createElement('div', { style: ds.bigStat }, c.stat),
+            React.createElement('div', { style: ds.cardLabel }, c.label),
+            c.lines && c.lines.map((l, j) => React.createElement('p', { key: j, style: ds.cardBody }, l)),
+            c.age && React.createElement('div', { style: ds.agePill }, `${c.age} unresolved`),
+            c.coverage && React.createElement('div', { style: ds.coverageList },
+              c.coverage.map((row, j) =>
+                React.createElement('div', { key: j, style: ds.coverageRow },
+                  React.createElement('span', { style: ds.coverageName }, row.name),
+                  React.createElement('div', { style: ds.barTrack },
+                    React.createElement('div', { style: { ...ds.barFill, width: row.pct + '%', opacity: row.pct > 85 ? 1 : 0.65 } })
+                  ),
+                  React.createElement('span', { style: ds.coveragePct }, row.pct + '%')
+                )
+              )
+            ),
+            c.risk && React.createElement('p', { style: { ...ds.cardBody, color: '#FBBF24', marginTop: 4 } }, c.risk)
+          )
+        )
+      ),
+
+      // ── Summary row ──
+      React.createElement('div', { style: ds.grid4 },
+        summaryItems.map((s, i) =>
+          React.createElement('div', { key: i, style: ds.summaryCard },
+            React.createElement('div', { style: ds.summaryStat }, s.stat),
+            React.createElement('div', { style: ds.summaryLabel }, s.label)
+          )
+        )
+      ),
+
+      // ── Bottom two cards ──
+      React.createElement('div', { style: ds.grid2 },
+
+        // Trending questions
+        React.createElement('div', { style: ds.panel },
+          React.createElement('div', { style: ds.panelLabel }, 'Trending Questions This Week'),
+          React.createElement('div', { style: ds.feed },
+            trending.map((q, i) =>
+              React.createElement('div', { key: i, style: { ...ds.feedItem, ...(i < trending.length - 1 ? ds.feedItemBorder : {}) } },
+                React.createElement('div', { style: ds.feedMeta },
+                  React.createElement('span', { style: ds.deptTag }, q.dept),
+                  React.createElement('span', { style: ds.timeTag }, q.time)
+                ),
+                React.createElement('p', { style: ds.feedText }, q.text)
+              )
+            )
+          )
+        ),
+
+        // Knowledge discoveries
+        React.createElement('div', { style: ds.panel },
+          React.createElement('div', { style: ds.panelLabel }, 'Recent Knowledge Discoveries'),
+          React.createElement('div', { style: ds.feed },
+            discoveries.map((d, i) =>
+              React.createElement('div', { key: i, style: { ...ds.feedItem, ...(i < discoveries.length - 1 ? ds.feedItemBorder : {}), display: 'flex', gap: 10 } },
+                React.createElement('span', { style: { ...ds.discDot, background: d.dot, boxShadow: `0 0 6px ${d.dot}88` } }),
+                React.createElement('p', { style: ds.feedText }, d.text)
+              )
+            )
+          )
+        )
+      ),
+
+      // ── Footer ──
+      React.createElement('p', { style: ds.footer },
+        'Last updated 3 minutes ago · 1,847 knowledge entries this month · 340 new connections'
+      )
+    )
+  );
+}
+
+const ds = {
+  page: { flex: 1, overflowY: 'auto', background: '#0B1326' },
+  inner: { maxWidth: 1100, margin: '0 auto', padding: '28px 32px 36px', display: 'flex', flexDirection: 'column', gap: 14 },
+
+  // Top cards
+  grid3: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 },
+  topCard: { background: '#1A2744', border: '1px solid rgba(67,70,85,0.4)', borderLeft: '3px solid #2563EB', borderRadius: 8, padding: '22px 20px', display: 'flex', flexDirection: 'column', gap: 8 },
+  bigStat: { fontSize: 52, fontWeight: 700, color: '#DAE2FD', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: 'Inter, sans-serif' },
+  cardLabel: { fontSize: 10, fontWeight: 700, color: '#B4C5FF', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', marginBottom: 2 },
+  cardBody: { fontSize: 12, color: '#C3C6D7', lineHeight: 1.6, fontFamily: 'Inter, sans-serif' },
+  agePill: { display: 'inline-block', marginTop: 2, fontSize: 10, fontWeight: 600, color: '#FBBF24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 12, padding: '3px 10px', fontFamily: 'Inter, sans-serif', alignSelf: 'flex-start' },
+
+  // Coverage bars
+  coverageList: { display: 'flex', flexDirection: 'column', gap: 7, marginTop: 2 },
+  coverageRow: { display: 'flex', alignItems: 'center', gap: 8 },
+  coverageName: { fontSize: 11, color: '#8D90A0', fontFamily: 'Inter, sans-serif', width: 160, flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  barTrack: { flex: 1, height: 3, background: 'rgba(67,70,85,0.4)', borderRadius: 2, overflow: 'hidden' },
+  barFill: { height: '100%', background: '#B4C5FF', borderRadius: 2, transition: 'width 600ms ease' },
+  coveragePct: { fontSize: 11, color: '#C3C6D7', fontFamily: 'Inter, sans-serif', width: 32, textAlign: 'right', flexShrink: 0 },
+
+  // Summary row
+  grid4: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 },
+  summaryCard: { background: '#171F33', border: '1px solid rgba(67,70,85,0.3)', borderRadius: 8, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 4 },
+  summaryStat: { fontSize: 32, fontWeight: 700, color: '#DAE2FD', letterSpacing: '-0.025em', fontFamily: 'Inter, sans-serif' },
+  summaryLabel: { fontSize: 11, color: '#C3C6D7', lineHeight: 1.5, fontFamily: 'Inter, sans-serif' },
+
+  // Bottom panels
+  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
+  panel: { background: '#171F33', border: '1px solid rgba(67,70,85,0.3)', borderLeft: '3px solid #2563EB', borderRadius: 8, padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 14 },
+  panelLabel: { fontSize: 10, fontWeight: 700, color: '#B4C5FF', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' },
+  feed: { display: 'flex', flexDirection: 'column' },
+  feedItem: { padding: '10px 0', display: 'flex', flexDirection: 'column', gap: 5 },
+  feedItemBorder: { borderBottom: '1px solid rgba(67,70,85,0.2)' },
+  feedMeta: { display: 'flex', gap: 8, alignItems: 'center' },
+  deptTag: { fontSize: 10, fontWeight: 600, color: '#B4C5FF', background: 'rgba(180,197,255,0.08)', border: '1px solid rgba(180,197,255,0.15)', borderRadius: 4, padding: '2px 8px', fontFamily: 'Inter, sans-serif' },
+  timeTag: { fontSize: 10, color: '#8D90A0', fontFamily: 'Inter, sans-serif' },
+  feedText: { fontSize: 12, color: '#DAE2FD', lineHeight: 1.6, fontFamily: 'Inter, sans-serif' },
+  discDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 5 },
+
+  // Footer
+  footer: { textAlign: 'center', fontSize: 12, color: 'rgba(141,144,160,0.55)', fontFamily: 'Inter, sans-serif', paddingTop: 4 },
+};
+
+</script>
+
+<script type="text/babel">
+Object.assign(window, { ConsiliiumView });
+
+const gtAgents = [
+  { id: 'design',   name: 'Design Engineer',       letter: 'D', color: '#B4C5FF', bg: 'rgba(180,197,255,0.15)' },
+  { id: 'stress',   name: 'Stress Engineer',        letter: 'S', color: '#4ADE80', bg: 'rgba(74,222,128,0.12)' },
+  { id: 'cfd',      name: 'CFD Engineer',           letter: 'C', color: '#FBBF24', bg: 'rgba(251,191,36,0.12)' },
+  { id: 'mfg',      name: 'Manufacturing Engineer', letter: 'M', color: '#C084FC', bg: 'rgba(192,132,252,0.12)' },
+];
+
+const initialCards = [
+  {
+    agent: 'design',
+    text: 'The current convective-film cooling scheme achieves θ 0.5 at gas temperatures of 1800K. Moving to the double-wall transpiration design could push θ to 0.65, but wall thickness drops to 0.5mm. We need to verify castability of the internal channel geometry with Manufacturing before committing to this path.',
+  },
+  {
+    agent: 'stress',
+    text: 'At rim temperatures of 1100K with a radial ΔT of 400K, thermal stress in the liner outer wall exceeds 85% of yield for IN-738 after 3,000 cycles. The transpiration scheme reduces wall temperature by ~80K, bringing us back to 72% of yield. However, the perforated hot wall introduces 12% stress concentration at hole edges. Recommend a full LCF analysis before selecting the scheme.',
+  },
+  {
+    agent: 'cfd',
+    text: 'Film cooling injection at the proposed blowing ratios will increase total pressure loss in the combustor by 1.8%. This is within the 2% budget but leaves almost no margin. The double-wall scheme with transpiration reduces coolant mass flow by 25%, recovering 0.6% of pressure loss. From an aerodynamic standpoint, transpiration is preferred.',
+  },
+  {
+    agent: 'mfg',
+    text: 'The double-wall construction with internal sinusoidal channels requires investment casting with ceramic cores of 0.5mm minimum feature size. Current foundry capability is 0.7mm. This means either retooling (4 months, ~$200K) or simplifying to straight radial passages, reducing cooling effectiveness by ~15%. The grater-type perforated wall is producible today using laser drilling.',
+  },
+];
+
+const synthesisText = 'The consilium identifies transpiration cooling as the preferred scheme based on thermal effectiveness (θ 0.65 vs 0.5) and aerodynamic performance (25% coolant reduction). Two blockers require resolution before final selection: (1) Manufacturing capability gap for 0.5mm ceramic cores, with a fallback to simplified radial channels at 15% effectiveness penalty, and (2) LCF validation of perforated hot wall stress concentrations. Recommended next step: request foundry feasibility study and commission parallel LCF analysis. Estimated decision timeline: 6 weeks. Relevant expert identified: Dr. Volkov has undocumented experience with similar double-wall geometries from the previous engine program.';
+
+function ConsiliiumView() {
+  const [input, setInput] = React.useState('');
+
+  return React.createElement('div', { style: cStyles.container },
+
+    /* ── Sidebar ── */
+    React.createElement('div', { style: cStyles.sidebar },
+      React.createElement('div', { style: cStyles.sidebarLabel }, 'Active Agents'),
+      gtAgents.map(a =>
+        React.createElement('div', { key: a.id, style: cStyles.agentCard },
+          React.createElement('div', { style: { ...cStyles.agentAvatar, background: a.bg, color: a.color, border: `1px solid ${a.color}33` } }, a.letter),
+          React.createElement('div', null,
+            React.createElement('div', { style: cStyles.agentName }, a.name),
+            React.createElement('div', { style: cStyles.agentStatus }, 'Ready')
+          )
+        )
+      ),
+      React.createElement('div', { style: { ...cStyles.sidebarLabel, marginTop: 24 } }, 'Context'),
+      ['8 relevant documents', 'HPT Stage 1 blade cooling report (2024)', 'Combustion liner thermal survey data', 'Film cooling degradation study 15,000 hrs'].map((item, i) =>
+        React.createElement('div', { key: i, style: cStyles.contextItem }, item)
+      )
+    ),
+
+    /* ── Main ── */
+    React.createElement('div', { style: cStyles.main },
+      React.createElement('div', { style: cStyles.topBar },
+        React.createElement('div', { style: cStyles.sectionLabel }, 'Consilium'),
+        React.createElement('h2', { style: cStyles.title }, 'Combustion liner cooling scheme selection for next-gen HPT module')
+      ),
+
+      React.createElement('div', { style: cStyles.scrollArea },
+
+        /* 2×2 agent grid */
+        React.createElement('div', { style: cStyles.grid2x2 },
+          initialCards.map((card, i) => {
+            const agent = gtAgents.find(a => a.id === card.agent);
+            return React.createElement('div', { key: i, style: cStyles.agentCard2 },
+              React.createElement('div', { style: cStyles.cardHeader },
+                React.createElement('div', { style: { ...cStyles.cardAvatar, background: agent.bg, color: agent.color, border: `1px solid ${agent.color}33` } }, agent.letter),
+                React.createElement('div', { style: { ...cStyles.cardAgentName, color: agent.color } }, agent.name)
+              ),
+              React.createElement('p', { style: cStyles.cardText }, card.text)
+            );
+          })
+        ),
+
+        /* Synthesis card */
+        React.createElement('div', { style: cStyles.synthesis },
+          React.createElement('div', { style: cStyles.synthHeader },
+            React.createElement('svg', { width: 14, height: 14, viewBox: '0 0 14 14', fill: '#B4C5FF' },
+              React.createElement('polygon', { points: '7,0 8.5,5.5 14,7 8.5,8.5 7,14 5.5,8.5 0,7 5.5,5.5' })
+            ),
+            React.createElement('span', { style: cStyles.synthLabel }, 'Synthesis')
+          ),
+          React.createElement('p', { style: cStyles.synthText }, synthesisText)
+        )
+      ),
+
+      /* Input */
+      React.createElement('div', { style: cStyles.inputRow },
+        React.createElement('input', {
+          style: cStyles.input,
+          placeholder: 'Pose a question for the agents to brainstorm…',
+          value: input,
+          onChange: e => setInput(e.target.value),
+        }),
+        React.createElement('button', { style: { ...cStyles.btn, ...(input.trim() ? cStyles.btnActive : {}) } }, 'Brainstorm')
+      )
+    )
+  );
+}
+
+const cStyles = {
+  container: { flex: 1, display: 'flex', overflow: 'hidden' },
+  sidebar: { width: 220, background: '#0B1326', borderRight: '1px solid rgba(67,70,85,0.2)', padding: '28px 18px', display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0, overflowY: 'auto' },
+  sidebarLabel: { fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8D90A0', marginBottom: 4, fontFamily: 'Inter, sans-serif' },
+  agentCard: { display: 'flex', gap: 10, alignItems: 'center', padding: '6px 0' },
+  agentAvatar: { width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0, fontFamily: 'Inter, sans-serif' },
+  agentName: { fontSize: 13, fontWeight: 500, color: '#DAE2FD', fontFamily: 'Inter, sans-serif' },
+  agentStatus: { fontSize: 11, color: '#8D90A0', fontFamily: 'Inter, sans-serif' },
+  contextItem: { fontSize: 11, color: '#8D90A0', padding: '5px 0', borderBottom: '1px solid rgba(67,70,85,0.15)', fontFamily: 'Inter, sans-serif', lineHeight: 1.5 },
+
+  main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  topBar: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(67,70,85,0.2)', flexShrink: 0 },
+  sectionLabel: { fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#B4C5FF', marginBottom: 6, fontFamily: 'Inter, sans-serif' },
+  title: { fontSize: 16, fontWeight: 700, color: '#DAE2FD', letterSpacing: '-0.01em', lineHeight: 1.4, fontFamily: 'Inter, sans-serif' },
+
+  scrollArea: { flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 },
+
+  /* 2×2 grid */
+  grid2x2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
+  agentCard2: { background: '#171F33', border: '1px solid rgba(67,70,85,0.3)', borderRadius: 8, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 },
+  cardHeader: { display: 'flex', gap: 10, alignItems: 'center' },
+  cardAvatar: { width: 26, height: 26, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, fontFamily: 'Inter, sans-serif' },
+  cardAgentName: { fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif' },
+  cardText: { fontSize: 13, color: '#C3C6D7', lineHeight: 1.7, fontFamily: 'Inter, sans-serif' },
+
+  /* Synthesis */
+  synthesis: { background: '#222A3D', border: '1px solid rgba(67,70,85,0.3)', borderRadius: 8, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10 },
+  synthHeader: { display: 'flex', gap: 8, alignItems: 'center' },
+  synthLabel: { fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#B4C5FF', fontFamily: 'Inter, sans-serif' },
+  synthText: { fontSize: 13, color: '#C3C6D7', lineHeight: 1.75, fontFamily: 'Inter, sans-serif' },
+
+  inputRow: { padding: '14px 24px', borderTop: '1px solid rgba(67,70,85,0.2)', display: 'flex', gap: 12, flexShrink: 0 },
+  input: { flex: 1, background: '#171F33', border: '1px solid #2D3449', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: '#DAE2FD', fontFamily: 'Inter, sans-serif', outline: 'none' },
+  btn: { padding: '10px 20px', background: '#222A3D', border: '1px solid rgba(67,70,85,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#8D90A0', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 200ms' },
+  btnActive: { background: 'linear-gradient(135deg,#2563EB,#03497A)', color: '#EEEFFF', borderColor: 'transparent' },
+};
+
+</script>
+
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = {
+  "accentColor": "#B4C5FF",
+  "ctaColor": "#2563EB",
+  "inputRadius": 12,
+  "showFooter": true
+};
+
+function App() {
+  const stored = localStorage.getItem('eximens-tab');
+  const [activeTab, setActiveTab] = React.useState(stored || 'Assistant');
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const [showTweaks, setShowTweaks] = React.useState(false);
+
+  React.useEffect(() => {
+    localStorage.setItem('eximens-tab', activeTab);
+  }, [activeTab]);
+
+  React.useEffect(() => {
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    }
